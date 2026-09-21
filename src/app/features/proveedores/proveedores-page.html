@@ -1,0 +1,91 @@
+<header class="page-head">
+  <div>
+    <h1>Proveedores</h1>
+    <p class="muted">Empresas que proveen prendas a la cadena.</p>
+  </div>
+  <button mat-flat-button class="btn-primary" (click)="nuevo()">
+    <mat-icon>add</mat-icon> Nuevo proveedor
+  </button>
+</header>
+
+<section class="filtros">
+  <mat-form-field appearance="outline" class="f-buscar">
+    <mat-label>Buscar</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input #buscador matInput [formControl]="qCtrl" placeholder="Nombre de la empresa…" />
+    <span matSuffix class="kbd">/</span>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="f-estado">
+    <mat-label>Estado</mat-label>
+    <mat-select [value]="estado()" (valueChange)="cambiarEstado($event)">
+      <mat-option value="todos">Todos</mat-option>
+      <mat-option value="activos">Activos</mat-option>
+      <mat-option value="inactivos">Inactivos</mat-option>
+    </mat-select>
+  </mat-form-field>
+</section>
+
+<div class="tabla-wrap mat-elevation-z1">
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <div class="tabla-scroll">
+    <table mat-table [dataSource]="proveedores()">
+      <ng-container matColumnDef="empresa">
+        <th mat-header-cell *matHeaderCellDef>Empresa</th>
+        <td mat-cell *matCellDef="let p">{{ p.nombre_empresa }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="contacto">
+        <th mat-header-cell *matHeaderCellDef>Contacto</th>
+        <td mat-cell *matCellDef="let p">{{ p.contacto || '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let p">{{ p.email || '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="telefono">
+        <th mat-header-cell *matHeaderCellDef>Teléfono</th>
+        <td mat-cell *matCellDef="let p">{{ p.telefono || '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="chip" [class.chip-off]="!p.activo">
+            {{ p.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let p" class="col-acciones">
+          <button mat-icon-button matTooltip="Editar" (click)="editar(p)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnas"></tr>
+    </table>
+  </div>
+
+  @if (sinResultados()) {
+    <p class="vacio">No se encontraron proveedores con esos filtros.</p>
+  }
+
+  <mat-paginator
+    [length]="total()"
+    [pageIndex]="page()"
+    [pageSize]="size()"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+    showFirstLastButtons
+  />
+</div>

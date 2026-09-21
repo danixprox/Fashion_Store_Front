@@ -1,0 +1,146 @@
+<header class="page-head">
+  <div>
+    <h1>{{ esEncargado() ? 'Reservas de mi sucursal' : 'Reservas' }}</h1>
+    <p class="muted">
+      Clientes que reservaron un turno para probarse una prenda
+      {{ esEncargado() ? '(CU18/CU19)' : 'en todas las sucursales (CU36)' }}.
+    </p>
+  </div>
+</header>
+
+<section class="filtros">
+  @if (!esEncargado()) {
+    <mat-form-field appearance="outline" class="f-sucursal">
+      <mat-label>Sucursal</mat-label>
+      <mat-select [value]="sucursalId()" (valueChange)="cambiarSucursal($event)">
+        <mat-option [value]="null">Todas</mat-option>
+        @for (s of sucursales(); track s.id) {
+          <mat-option [value]="s.id">{{ s.nombre }} — {{ s.ciudad }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
+
+  <mat-form-field appearance="outline" class="f-estado">
+    <mat-label>Estado</mat-label>
+    <mat-select [value]="estado()" (valueChange)="cambiarEstado($event)">
+      <mat-option [value]="null">Todas</mat-option>
+      <mat-option value="PENDIENTE">Pendientes</mat-option>
+      <mat-option value="NOTIFICADA">Notificadas</mat-option>
+      <mat-option value="ATENDIDA">Atendidas</mat-option>
+      <mat-option value="CANCELADA">Canceladas</mat-option>
+    </mat-select>
+  </mat-form-field>
+</section>
+
+<div class="tabla-wrap mat-elevation-z1">
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <div class="tabla-scroll">
+    <table mat-table [dataSource]="reservas()">
+      <ng-container matColumnDef="fecha">
+        <th mat-header-cell *matHeaderCellDef>Turno</th>
+        <td mat-cell *matCellDef="let r">
+          <strong>{{ r.fecha | date: 'd MMM y' }}</strong>
+          <span class="hora">{{ r.hora_inicio.slice(0, 5) }} – {{ r.hora_fin.slice(0, 5) }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="sucursal">
+        <th mat-header-cell *matHeaderCellDef>Sucursal</th>
+        <td mat-cell *matCellDef="let r">{{ r.sucursal }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="cliente">
+        <th mat-header-cell *matHeaderCellDef>Cliente</th>
+        <td mat-cell *matCellDef="let r">
+          {{ r.cliente }}
+          @if (r.cliente_telefono) {
+            <span class="tel">{{ r.cliente_telefono }}</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="items">
+        <th mat-header-cell *matHeaderCellDef>Prendas</th>
+        <td mat-cell *matCellDef="let r">
+          <ul class="items">
+            @for (item of r.items; track item.variante_id) {
+              <li>
+                {{ item.producto }}
+                <span class="detalle">{{ item.talla }} · {{ item.color }}</span>
+                <span class="cant">×{{ item.cantidad }}</span>
+              </li>
+            }
+          </ul>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let r">
+          <span class="chip" [class]="'chip-' + r.estado.toLowerCase()">
+            {{ etiquetaEstado(r.estado) }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let r" class="col-acciones">
+          @if (r.estado === 'PENDIENTE') {
+            <button
+              mat-flat-button
+              class="btn-primary"
+              [disabled]="procesando() === r.id"
+              matTooltip="Avisar al cliente que ya puede venir a probarse la prenda"
+              (click)="notificar(r)"
+            >
+              <mat-icon>notifications_active</mat-icon> Notificar
+            </button>
+          }
+          @if (r.estado === 'NOTIFICADA') {
+            <button
+              mat-flat-button
+              class="btn-primary"
+              [disabled]="procesando() === r.id"
+              matTooltip="El cliente llegó y se le entregó la prenda"
+              (click)="recepcionar(r)"
+            >
+              <mat-icon>how_to_reg</mat-icon> Recepcionar
+            </button>
+          }
+          @if (r.estado === 'ATENDIDA') {
+            <button
+              mat-flat-button
+              class="btn-primary"
+              [disabled]="procesando() === r.id"
+              matTooltip="El cliente ya se probó las prendas: indicá cuáles se lleva"
+              (click)="finalizar(r)"
+            >
+              <mat-icon>inventory_2</mat-icon> Finalizar
+            </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnas()"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnas()"></tr>
+    </table>
+  </div>
+
+  @if (sinResultados()) {
+    <p class="vacio">No hay reservas con esos filtros.</p>
+  }
+
+  <mat-paginator
+    [length]="total()"
+    [pageIndex]="page()"
+    [pageSize]="size()"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+    showFirstLastButtons
+  />
+</div>

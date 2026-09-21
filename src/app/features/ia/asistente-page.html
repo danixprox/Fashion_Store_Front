@@ -1,0 +1,69 @@
+<mat-toolbar class="asis-bar">
+  <button mat-icon-button (click)="volver()" aria-label="Volver">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Asistente virtual</span>
+</mat-toolbar>
+
+<div class="asis-content">
+  <div class="mensajes">
+    @for (m of mensajes(); track $index) {
+      <div class="fila" [class.propio]="m.rol === 'cliente'">
+        <div class="burbuja" [class.cliente]="m.rol === 'cliente'">
+          <p>{{ m.texto }}</p>
+          @if (m.productos && m.productos.length > 0) {
+            <div class="productos-mini">
+              @for (p of m.productos; track p.id) {
+                <a class="mini-card" [routerLink]="['/catalogo', p.id]">
+                  @if (p.imagen_url) {
+                    <img [src]="p.imagen_url" [alt]="p.nombre" />
+                  }
+                  <div>
+                    <span class="nombre">{{ p.nombre }}</span>
+                    @if (p.precio_promocional) {
+                      <span class="precio">
+                        <span class="precio-tachado">Bs {{ +p.precio_base | number: '1.2-2' }}</span>
+                        <span class="precio-oferta">Bs {{ +p.precio_promocional | number: '1.2-2' }}</span>
+                      </span>
+                    } @else {
+                      <span class="precio">Bs {{ +p.precio_base | number: '1.2-2' }}</span>
+                    }
+                  </div>
+                </a>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+    @if (enviando()) {
+      <div class="fila">
+        <div class="burbuja cargando">
+          <mat-spinner diameter="18" />
+        </div>
+      </div>
+    }
+    <div #scrollAnchor></div>
+  </div>
+
+  <form class="entrada" (submit)="$event.preventDefault(); enviar()">
+    <mat-form-field appearance="outline" class="campo">
+      <input
+        matInput
+        [formControl]="mensajeCtrl"
+        placeholder="Escribí tu consulta..."
+        [disabled]="enviando()"
+        (keydown.enter)="$event.preventDefault(); enviar()"
+      />
+    </mat-form-field>
+    <button
+      mat-icon-button
+      class="btn-enviar"
+      type="button"
+      (click)="enviar()"
+      [disabled]="enviando() || !mensajeCtrl.value.trim()"
+    >
+      <mat-icon>send</mat-icon>
+    </button>
+  </form>
+</div>

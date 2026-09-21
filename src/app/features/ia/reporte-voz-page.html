@@ -1,0 +1,56 @@
+<div class="reporte-voz">
+  <header>
+    <h1>Generar reporte por voz</h1>
+    <p>Decí qué querés saber (ventas, stock) y la IA arma un resumen.</p>
+  </header>
+
+  @if (!soportado) {
+    <div class="aviso">
+      <mat-icon>info</mat-icon>
+      Tu navegador no soporta reconocimiento de voz. Probá con Chrome o Edge.
+    </div>
+  } @else {
+    <div class="mic-zona">
+      <button
+        mat-fab
+        [class.activo]="escuchando()"
+        (click)="escuchando() ? detener() : escuchar()"
+        aria-label="Hablar"
+      >
+        <mat-icon>{{ escuchando() ? 'stop' : 'mic' }}</mat-icon>
+      </button>
+      <p class="hint">
+        {{ escuchando() ? 'Escuchando... tocá para detener' : 'Tocá para hablar' }}
+      </p>
+    </div>
+
+    @if (transcripcion()) {
+      <div class="transcripcion">
+        <strong>Escuché:</strong>
+        <p>"{{ transcripcion() }}"</p>
+        <button
+          mat-flat-button
+          class="btn-generar"
+          (click)="generarReporte()"
+          [disabled]="generando()"
+        >
+          @if (generando()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            Generar reporte
+          }
+        </button>
+      </div>
+    }
+
+    @if (reporte()) {
+      <div class="reporte">
+        <div class="reporte-head">
+          <mat-icon>auto_awesome</mat-icon>
+          <strong>Reporte generado</strong>
+        </div>
+        <p>{{ reporte() }}</p>
+      </div>
+    }
+  }
+</div>

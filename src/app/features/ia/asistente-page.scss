@@ -1,0 +1,117 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px);
+}
+
+.asis-bar {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  gap: 0.5rem;
+}
+
+.asis-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.mensajes {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+}
+
+.fila {
+  display: flex;
+}
+
+.fila.propio {
+  justify-content: flex-end;
+}
+
+.burbuja {
+  max-width: 80%;
+  background: #f1f5f9;
+  border-radius: 14px;
+  padding: 0.65rem 0.9rem;
+}
+
+.burbuja p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.burbuja.cliente {
+  background: var(--fs-green-700);
+  color: #fff;
+}
+
+.burbuja.cargando {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 0.9rem;
+}
+
+.productos-mini {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mini-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.4rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.mini-card img {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.mini-card .nombre {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.mini-card .precio {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--fs-green-700);
+  font-weight: 600;
+}
+
+.entrada {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.campo {
+  flex: 1;
+}
+
+.btn-enviar {
+  background: var(--fs-green-700);
+  color: #fff;
+}
