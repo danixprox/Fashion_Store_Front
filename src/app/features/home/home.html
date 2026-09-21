@@ -1,0 +1,76 @@
+<section class="hero">
+  <div class="hero-text">
+    <span class="eyebrow">FashionStore</span>
+    <h1>Vestí la temporada</h1>
+    <p>
+      Descubrí el catálogo, reservá prendas para probarlas en tu sucursal más
+      cercana y probátelas con vestidor virtual desde la app.
+    </p>
+    <div class="hero-actions">
+      <a mat-flat-button class="btn-primario" routerLink="/catalogo">
+        Ver catálogo
+        <mat-icon>arrow_forward</mat-icon>
+      </a>
+    </div>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <mat-icon>checkroom</mat-icon>
+  </div>
+</section>
+
+@if (esCliente) {
+  <section class="destacados recomendaciones">
+    <header class="sec-head">
+      <div>
+        <h2>Recomendado para vos</h2>
+        <p>Elegido por nuestro asistente de IA según tus gustos.</p>
+      </div>
+    </header>
+
+    @if (cargandoRecomendaciones()) {
+      <div class="grid">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="skeleton"></div>
+        }
+      </div>
+    } @else if (recomendaciones().length > 0) {
+      <div class="grid">
+        @for (p of recomendaciones(); track p.id) {
+          <app-recomendacion-card [producto]="p" />
+        }
+      </div>
+    }
+  </section>
+}
+
+<section class="destacados">
+  <header class="sec-head">
+    <div>
+      <h2>Novedades de temporada</h2>
+      <p>Lo último que llegó a nuestras colecciones vigentes.</p>
+    </div>
+    <a routerLink="/catalogo" class="ver-todo">Ver todo el catálogo →</a>
+  </header>
+
+  @if (cargando()) {
+    <div class="grid">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="skeleton"></div>
+      }
+    </div>
+  } @else if (destacados().length > 0) {
+    <div class="grid">
+      @for (p of destacados(); track p.id) {
+        <app-producto-card [producto]="p" />
+      }
+    </div>
+  } @else {
+    <div class="vacio">
+      <mat-icon>calendar_month</mat-icon>
+      <p>
+        Todavía no hay productos de temporada vigente.
+        <a routerLink="/catalogo">Mirá el catálogo completo</a>.
+      </p>
+    </div>
+  }
+</section>

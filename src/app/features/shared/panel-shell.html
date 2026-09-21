@@ -1,0 +1,63 @@
+<mat-toolbar class="topbar">
+  <button mat-icon-button (click)="alternar()" aria-label="Menú">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span class="brand">
+    <mat-icon>storefront</mat-icon> FashionStore
+    @if (etiqueta()) {
+      <span class="tag">{{ etiqueta() }}</span>
+    }
+  </span>
+
+  <span class="spacer"></span>
+
+  <button mat-button [matMenuTriggerFor]="menu" class="user-btn">
+    <mat-icon>account_circle</mat-icon>
+    <span class="hide-xs">{{ usuario()?.nombre }} {{ usuario()?.apellido }}</span>
+    <mat-icon>arrow_drop_down</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <div class="menu-head">
+      <strong>{{ usuario()?.nombre }} {{ usuario()?.apellido }}</strong>
+      <small>{{ usuario()?.email }}</small>
+      <small class="rol">{{ usuario()?.rol }}</small>
+    </div>
+    <button mat-menu-item routerLink="/mi-cuenta">
+      <mat-icon>person</mat-icon> Mi cuenta
+    </button>
+    <button mat-menu-item (click)="salir()">
+      <mat-icon>logout</mat-icon> Cerrar sesión
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<mat-sidenav-container class="shell">
+  <mat-sidenav
+    [opened]="abierto()"
+    [mode]="esMovil() ? 'over' : 'side'"
+    (closedStart)="abierto.set(false)"
+    class="side"
+  >
+    <mat-nav-list>
+      @for (item of nav(); track item.link) {
+        <a
+          mat-list-item
+          [routerLink]="item.link"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [activated]="rla.isActive"
+          (click)="cerrarSiMovil()"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <div class="content-inner">
+      <ng-content />
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
