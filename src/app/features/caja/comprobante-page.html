@@ -1,0 +1,107 @@
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (error()) {
+  <p class="vacio">No se pudo encontrar ese comprobante.</p>
+}
+
+@if (comprobante(); as c) {
+  <div class="acciones no-imprimir">
+    <button mat-button routerLink="/caja/historial">
+      <mat-icon>arrow_back</mat-icon> Historial
+    </button>
+    <div>
+      <button mat-button routerLink="/caja/nueva-venta">Nueva venta</button>
+      <button mat-flat-button class="btn-primario" (click)="imprimir()">
+        <mat-icon>print</mat-icon> Imprimir
+      </button>
+    </div>
+  </div>
+
+  <div class="comprobante">
+    <header>
+      <h1>FashionStore</h1>
+      <p>{{ c.sucursal }} — {{ c.ciudad }}</p>
+      <p class="direccion">{{ c.direccion }}</p>
+    </header>
+
+    <div class="datos">
+      <div>
+        <span class="etiqueta">Comprobante</span>
+        <strong>#{{ c.venta_id }}</strong>
+      </div>
+      <div>
+        <span class="etiqueta">Fecha</span>
+        <strong>{{ c.fecha_creacion | date: 'd MMM y, HH:mm' }}</strong>
+      </div>
+    </div>
+
+    <div class="datos">
+      <div>
+        <span class="etiqueta">Cliente</span>
+        <strong>{{ c.cliente_nombre }}</strong>
+        <span class="sub">{{ c.cliente_email }}</span>
+      </div>
+      @if (c.cajero_nombre) {
+        <div>
+          <span class="etiqueta">Atendido por</span>
+          <strong>{{ c.cajero_nombre }}</strong>
+        </div>
+      }
+    </div>
+
+    <table class="items">
+      <thead>
+        <tr>
+          <th>Prenda</th>
+          <th>Cant.</th>
+          <th>Precio</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of c.items; track item.id) {
+          <tr>
+            <td>{{ item.producto }} <span class="sub">{{ item.talla }} · {{ item.color }}</span></td>
+            <td>{{ item.cantidad }}</td>
+            <td>
+              @if (item.precio_original && +item.precio_original > +item.precio_unitario) {
+                <span class="precio-tachado">Bs {{ +item.precio_original | number: '1.2-2' }}</span>
+              }
+              Bs {{ +item.precio_unitario | number: '1.2-2' }}
+            </td>
+            <td>Bs {{ +item.subtotal | number: '1.2-2' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (ahorro(c) > 0) {
+      <div class="descuento-linea">
+        <span>Ahorro por promociones</span>
+        <span>− Bs {{ ahorro(c) | number: '1.2-2' }}</span>
+      </div>
+    }
+
+    <div class="total-linea">
+      <span>Total</span>
+      <strong>Bs {{ +c.total | number: '1.2-2' }}</strong>
+    </div>
+
+    <div class="pago">
+      <span class="etiqueta">Método de pago</span>
+      <strong>{{ c.metodo_pago === 'EFECTIVO' ? 'Efectivo' : c.metodo_pago === 'TARJETA_CAJA' ? 'Tarjeta (caja)' : c.metodo_pago }}</strong>
+      @if (c.monto_recibido) {
+        <div class="detalle-pago">
+          <span>Recibido: Bs {{ +c.monto_recibido | number: '1.2-2' }}</span>
+          <span>Vuelto: Bs {{ +(c.vuelto ?? 0) | number: '1.2-2' }}</span>
+        </div>
+      }
+    </div>
+
+    <footer>
+      <p>¡Gracias por tu compra!</p>
+    </footer>
+  </div>
+}

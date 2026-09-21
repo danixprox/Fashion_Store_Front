@@ -1,0 +1,248 @@
+<header class="page-head">
+  <h1>Reportes de ventas e inventario</h1>
+  <p class="muted">
+    Ingresos, costo y ganancia por período, y el stock actual con su valor. Calculado directamente de
+    la base de datos.
+  </p>
+</header>
+
+<mat-tab-group class="tabs" animationDuration="150ms">
+  <!-- ================= Ventas ================= -->
+  <mat-tab label="Ventas">
+    <div class="tab-body">
+      <div class="filtros">
+        <mat-form-field appearance="outline">
+          <mat-label>Desde</mat-label>
+          <input matInput [matDatepicker]="pd" [formControl]="desde" readonly />
+          <mat-datepicker-toggle matIconSuffix [for]="pd" />
+          <mat-datepicker #pd />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Hasta</mat-label>
+          <input matInput [matDatepicker]="ph" [formControl]="hasta" readonly />
+          <mat-datepicker-toggle matIconSuffix [for]="ph" />
+          <mat-datepicker #ph />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Sucursal</mat-label>
+          <mat-select [value]="sucursalVentas()" (valueChange)="sucursalVentas.set($event)">
+            <mat-option [value]="null">Todas</mat-option>
+            @for (s of sucursales(); track s.id) {
+              <mat-option [value]="s.id">{{ s.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button
+          mat-flat-button
+          class="btn-primary"
+          (click)="generarVentas()"
+          [disabled]="cargandoVentas() || desde.invalid || hasta.invalid"
+        >
+          <mat-icon>bar_chart</mat-icon> Generar reporte
+        </button>
+      </div>
+
+      @if (cargandoVentas()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      @if (ventas(); as r) {
+        <p class="periodo">
+          {{ r.sucursal }} · del {{ r.fecha_desde | date: 'dd/MM/yyyy' }} al
+          {{ r.fecha_hasta | date: 'dd/MM/yyyy' }}
+        </p>
+
+        <div class="stats">
+          <div class="stat">
+            <span class="etq">Ventas</span>
+            <strong>{{ r.cantidad_ventas }}</strong>
+            <span class="sub">{{ r.unidades }} prendas</span>
+          </div>
+          <div class="stat">
+            <span class="etq">Ingresos</span>
+            <strong>Bs {{ +r.ingresos | number: '1.2-2' }}</strong>
+          </div>
+          <div class="stat">
+            <span class="etq">Costo</span>
+            <strong>Bs {{ +r.costo | number: '1.2-2' }}</strong>
+          </div>
+          <div class="stat destacado">
+            <span class="etq">Ganancia</span>
+            <strong>Bs {{ +r.ganancia | number: '1.2-2' }}</strong>
+          </div>
+          <div class="stat">
+            <span class="etq">Descuentos otorgados</span>
+            <strong>Bs {{ +r.descuentos | number: '1.2-2' }}</strong>
+          </div>
+          <div class="stat">
+            <span class="etq">Ticket promedio</span>
+            <strong>Bs {{ +r.ticket_promedio | number: '1.2-2' }}</strong>
+          </div>
+        </div>
+
+        @if (r.lineas_sin_costo > 0) {
+          <p class="aviso">
+            <mat-icon>info</mat-icon>
+            {{ r.lineas_sin_costo }} prenda(s) vendida(s) no tienen costo registrado: no entran en el
+            costo ni en la ganancia (sí en los ingresos).
+          </p>
+        }
+
+        @if (r.cantidad_ventas === 0) {
+          <p class="vacio">No hay ventas en ese período.</p>
+        } @else {
+          <div class="dos-col">
+            <section class="bloque">
+              <h2>Ventas por sucursal</h2>
+              <table class="tabla">
+                <thead>
+                  <tr><th>Sucursal</th><th class="num">Ventas</th><th class="num">Ingresos</th></tr>
+                </thead>
+                <tbody>
+                  @for (s of r.por_sucursal; track s.sucursal) {
+                    <tr>
+                      <td>{{ s.sucursal }}</td>
+                      <td class="num">{{ s.cantidad_ventas }}</td>
+                      <td class="num">Bs {{ +s.ingresos | number: '1.2-2' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              <p class="nota">
+                Cada prenda cuenta para la sucursal de la que salió: una compra con prendas de varias
+                sucursales aparece en cada una.
+              </p>
+            </section>
+
+            <section class="bloque">
+              <h2>Productos más vendidos</h2>
+              <table class="tabla">
+                <thead>
+                  <tr><th>Producto</th><th class="num">Unidades</th><th class="num">Ingresos</th></tr>
+                </thead>
+                <tbody>
+                  @for (p of r.top_productos; track p.nombre) {
+                    <tr>
+                      <td>{{ p.nombre }}</td>
+                      <td class="num">{{ p.unidades }}</td>
+                      <td class="num">Bs {{ +p.ingresos | number: '1.2-2' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </section>
+          </div>
+        }
+      } @else if (!cargandoVentas()) {
+        <p class="vacio">Elegí el período y presioná "Generar reporte".</p>
+      }
+    </div>
+  </mat-tab>
+
+  <!-- ================= Inventario ================= -->
+  <mat-tab label="Inventario">
+    <div class="tab-body">
+      <div class="filtros">
+        <mat-form-field appearance="outline">
+          <mat-label>Sucursal</mat-label>
+          <mat-select [value]="sucursalInv()" (valueChange)="sucursalInv.set($event)">
+            <mat-option [value]="null">Todas</mat-option>
+            @for (s of sucursales(); track s.id) {
+              <mat-option [value]="s.id">{{ s.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Stock bajo (hasta)</mat-label>
+          <input matInput type="number" min="0" max="1000" [formControl]="umbral" />
+          <mat-hint>Unidades disponibles</mat-hint>
+        </mat-form-field>
+        <button
+          mat-flat-button
+          class="btn-primary"
+          (click)="generarInventario()"
+          [disabled]="cargandoInv() || umbral.invalid"
+        >
+          <mat-icon>inventory_2</mat-icon> Generar reporte
+        </button>
+      </div>
+
+      @if (cargandoInv()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      @if (inventario(); as r) {
+        <p class="periodo">{{ r.sucursal }} · stock bajo: {{ r.umbral }} o menos</p>
+
+        <div class="stats">
+          <div class="stat">
+            <span class="etq">Variantes</span>
+            <strong>{{ r.total_variantes }}</strong>
+          </div>
+          <div class="stat">
+            <span class="etq">Unidades disponibles</span>
+            <strong>{{ r.unidades_disponibles }}</strong>
+          </div>
+          <div class="stat">
+            <span class="etq">Unidades reservadas</span>
+            <strong>{{ r.unidades_reservadas }}</strong>
+          </div>
+          <div class="stat destacado">
+            <span class="etq">Valor del inventario</span>
+            <strong>Bs {{ +r.valor_inventario | number: '1.2-2' }}</strong>
+          </div>
+          <div class="stat" [class.alerta]="r.variantes_stock_bajo > 0">
+            <span class="etq">Con stock bajo</span>
+            <strong>{{ r.variantes_stock_bajo }}</strong>
+          </div>
+        </div>
+
+        <mat-slide-toggle [checked]="soloBajo()" (change)="soloBajo.set($event.checked)">
+          Ver solo stock bajo
+        </mat-slide-toggle>
+
+        <div class="scroll">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Talla · Color</th>
+                <th>Sucursal</th>
+                <th class="num">Disponible</th>
+                <th class="num">Reservado</th>
+                <th class="num">Costo prom.</th>
+                <th class="num">Valor</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (i of itemsInventario(); track $index) {
+                <tr [class.fila-bajo]="i.stock_bajo">
+                  <td>{{ i.producto }}</td>
+                  <td>{{ i.talla }} · {{ i.color }}</td>
+                  <td>{{ i.sucursal }}</td>
+                  <td class="num">{{ i.disponible }}</td>
+                  <td class="num">{{ i.reservada }}</td>
+                  <td class="num">
+                    {{ i.costo_promedio ? 'Bs ' + (+i.costo_promedio | number: '1.2-2') : '—' }}
+                  </td>
+                  <td class="num">{{ i.valor ? 'Bs ' + (+i.valor | number: '1.2-2') : '—' }}</td>
+                  <td>
+                    @if (i.stock_bajo) {
+                      <span class="chip-bajo">Stock bajo</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if (itemsInventario().length === 0) {
+            <p class="vacio">No hay variantes para mostrar.</p>
+          }
+        </div>
+      } @else if (!cargandoInv()) {
+        <p class="vacio">Presioná "Generar reporte" para ver el inventario.</p>
+      }
+    </div>
+  </mat-tab>
+</mat-tab-group>

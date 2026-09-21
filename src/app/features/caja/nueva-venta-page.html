@@ -1,0 +1,283 @@
+@if (guardando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<div class="nv-content">
+  <h1>Nueva venta</h1>
+
+  <div class="pasos">
+    <span [class.activo]="paso() === 'cliente'">1. Cliente</span>
+    <span [class.activo]="paso() === 'items'">2. Prendas</span>
+    <span [class.activo]="paso() === 'pago'">3. Pago</span>
+  </div>
+
+  @switch (paso()) {
+    @case ('cliente') {
+      <section class="tarjeta">
+        @if (clienteSeleccionado(); as c) {
+          <div class="cliente-elegido">
+            <mat-icon>check_circle</mat-icon>
+            <div>
+              <strong>{{ c.nombre }} {{ c.apellido }}</strong>
+              <span>{{ c.email }}</span>
+            </div>
+            <button mat-button (click)="quitarCliente()">Cambiar</button>
+          </div>
+        } @else {
+          <mat-form-field appearance="outline" class="ancho">
+            <mat-label>Buscar cliente</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [formControl]="clienteQ" placeholder="Nombre, email o teléfono…" />
+          </mat-form-field>
+
+          @if (clienteResultados().length > 0) {
+            <p class="subtitulo">
+              {{ clienteQ.value.trim() ? 'Resultados' : 'Clientes recientes' }}
+            </p>
+            <mat-nav-list class="resultados">
+              @for (c of clienteResultados(); track c.id) {
+                <a mat-list-item (click)="elegirCliente(c)">
+                  <span matListItemTitle>{{ c.nombre }} {{ c.apellido }}</span>
+                  <span matListItemLine>{{ c.email }} @if (c.telefono) { · {{ c.telefono }} }</span>
+                </a>
+              }
+            </mat-nav-list>
+          } @else {
+            <p class="aviso">No se encontró ningún cliente con eso.</p>
+          }
+
+          @if (!mostrarFormNuevo()) {
+            <button mat-button (click)="mostrarFormNuevo.set(true)">
+              <mat-icon>person_add</mat-icon> Es un cliente nuevo, registrarlo
+            </button>
+          } @else {
+            <form [formGroup]="formNuevoCliente" class="form-nuevo">
+              <div class="fila">
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombre</mat-label>
+                  <input matInput formControlName="nombre" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Apellido</mat-label>
+                  <input matInput formControlName="apellido" />
+                </mat-form-field>
+              </div>
+              <mat-form-field appearance="outline" class="ancho">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" formControlName="email" />
+              </mat-form-field>
+              <div class="fila">
+                <mat-form-field appearance="outline">
+                  <mat-label>Contraseña</mat-label>
+                  <input matInput type="password" formControlName="password" />
+                  <mat-hint>Mínimo 8 caracteres, para que después pueda entrar como cliente.</mat-hint>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Teléfono (opcional)</mat-label>
+                  <input matInput formControlName="telefono" />
+                </mat-form-field>
+              </div>
+              <div class="acciones-form">
+                <button mat-button type="button" (click)="mostrarFormNuevo.set(false)">Cancelar</button>
+                <button
+                  mat-flat-button
+                  class="btn-primario"
+                  type="button"
+                  [disabled]="guardando()"
+                  (click)="registrarClienteNuevo()"
+                >
+                  Registrar cliente
+                </button>
+              </div>
+            </form>
+          }
+        }
+      </section>
+
+      <div class="pie-paso">
+        <button
+          mat-flat-button
+          class="btn-primario"
+          [disabled]="!clienteSeleccionado()"
+          (click)="irAItems()"
+        >
+          Continuar <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    }
+
+    @case ('items') {
+      <p class="contexto">
+        Cliente: <strong>{{ clienteSeleccionado()?.nombre }} {{ clienteSeleccionado()?.apellido }}</strong>
+      </p>
+
+      <section class="tarjeta">
+        <mat-form-field appearance="outline" class="ancho">
+          <mat-label>Buscar prenda</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [formControl]="productoQ" placeholder="Nombre de la prenda…" />
+        </mat-form-field>
+
+        @if (!productoElegido()) {
+          @if (productoResultados().items.length > 0) {
+            <p class="subtitulo">
+              {{ productoQ.value.trim() ? 'Resultados' : 'Prendas del catálogo' }}
+            </p>
+            <mat-nav-list class="resultados">
+              @for (p of productoResultados().items; track p.id) {
+                <a mat-list-item (click)="elegirProducto(p)">
+                  <span matListItemTitle>{{ p.nombre }}</span>
+                  <span matListItemLine>Bs {{ +p.precio_base | number: '1.2-2' }}</span>
+                </a>
+              }
+            </mat-nav-list>
+          } @else {
+            <p class="aviso">No se encontró ninguna prenda con eso.</p>
+          }
+        }
+
+        @if (productoElegido(); as p) {
+          <div class="producto-elegido">
+            <strong>{{ p.nombre }}</strong>
+            <button mat-button (click)="productoElegido.set(null); variantesProducto.set([])">
+              Cambiar
+            </button>
+          </div>
+
+          <div class="variantes">
+            @for (v of variantesProducto(); track v.id) {
+              <button
+                type="button"
+                class="chip-variante"
+                [class.activa]="varianteElegida()?.id === v.id"
+                (click)="elegirVariante(v)"
+              >
+                {{ v.talla }} · {{ v.color }}
+              </button>
+            }
+          </div>
+
+          @if (varianteElegida(); as v) {
+            <div class="agregar-item">
+              <span class="stock" [class.sin-stock]="stockVariante() === 0">
+                @if (stockVariante() === null) {
+                  Consultando stock…
+                } @else if (stockVariante() === 0) {
+                  Sin stock en tu sucursal
+                } @else {
+                  {{ stockVariante() }} disponibles en tu sucursal
+                }
+              </span>
+              <mat-form-field appearance="outline" class="cantidad">
+                <mat-label>Cantidad</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="1"
+                  [value]="cantidad()"
+                  (input)="cantidad.set(+$any($event.target).value || 1)"
+                />
+              </mat-form-field>
+              <button
+                mat-flat-button
+                class="btn-primario"
+                [disabled]="!stockVariante()"
+                (click)="agregarItem()"
+              >
+                <mat-icon>add</mat-icon> Agregar
+              </button>
+            </div>
+          }
+        }
+      </section>
+
+      @if (items().length > 0) {
+        <section class="tarjeta">
+          <table class="tabla-items">
+            <thead>
+              <tr>
+                <th>Prenda</th>
+                <th>Cant.</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (i of items(); track i.variante_id) {
+                <tr>
+                  <td>{{ i.producto }} <span class="detalle">{{ i.talla }} · {{ i.color }}</span></td>
+                  <td>{{ i.cantidad }}</td>
+                  <td>Bs {{ i.precio | number: '1.2-2' }}</td>
+                  <td>Bs {{ i.precio * i.cantidad | number: '1.2-2' }}</td>
+                  <td>
+                    <button mat-icon-button (click)="quitarItem(i.variante_id)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <div class="total-linea">
+            <span>Total</span>
+            <strong>Bs {{ total() | number: '1.2-2' }}</strong>
+          </div>
+        </section>
+      }
+
+      <div class="pie-paso">
+        <button mat-button (click)="paso.set('cliente')">Volver</button>
+        <button
+          mat-flat-button
+          class="btn-primario"
+          [disabled]="items().length === 0 || guardando()"
+          (click)="registrarVenta()"
+        >
+          Registrar venta <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    }
+
+    @case ('pago') {
+      <section class="tarjeta">
+        <h2>Total a cobrar: Bs {{ total() | number: '1.2-2' }}</h2>
+
+        <mat-radio-group
+          class="metodos"
+          [value]="metodo()"
+          (change)="metodo.set($any($event).value)"
+        >
+          <mat-radio-button value="EFECTIVO">Efectivo</mat-radio-button>
+          <mat-radio-button value="TARJETA_CAJA">Tarjeta (POS de caja)</mat-radio-button>
+        </mat-radio-group>
+
+        @if (metodo() === 'EFECTIVO') {
+          <mat-form-field appearance="outline" class="ancho">
+            <mat-label>Monto recibido</mat-label>
+            <span matTextPrefix>Bs&nbsp;</span>
+            <input
+              matInput
+              type="number"
+              min="0"
+              (input)="montoRecibido.set(+$any($event.target).value || 0)"
+            />
+            <mat-hint>A cobrar: Bs {{ total() | number: '1.2-2' }}</mat-hint>
+          </mat-form-field>
+          @if (vuelto() !== null) {
+            <p class="vuelto">Vuelto: Bs {{ vuelto() | number: '1.2-2' }}</p>
+          }
+        }
+
+        <button
+          mat-flat-button
+          class="btn-primario"
+          [disabled]="guardando()"
+          (click)="confirmarPago()"
+        >
+          Confirmar pago
+        </button>
+      </section>
+    }
+  }
+</div>

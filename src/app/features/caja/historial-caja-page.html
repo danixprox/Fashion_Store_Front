@@ -1,0 +1,39 @@
+<h1>Historial de ventas</h1>
+<p class="muted">Ventas presenciales registradas en tu sucursal.</p>
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (sinResultados()) {
+  <p class="vacio">Todavía no registraste ninguna venta.</p>
+}
+
+<div class="lista">
+  @for (v of ventas(); track v.id) {
+    <div class="tarjeta">
+      <div class="cabecera">
+        <div>
+          <strong>Pedido #{{ v.id }}</strong>
+          <span class="fecha">{{ v.fecha_creacion | date: 'd MMM y, HH:mm' }}</span>
+        </div>
+        <span class="chip">{{ v.cliente_nombre }}</span>
+      </div>
+      <ul class="items">
+        @for (item of v.items; track item.id) {
+          <li>
+            {{ item.producto }}
+            <span class="detalle">{{ item.talla }} · {{ item.color }}</span>
+            <span class="cant">×{{ item.cantidad }}</span>
+          </li>
+        }
+      </ul>
+      <div class="pie">
+        <span class="total">Total Bs {{ +v.total | number: '1.2-2' }}</span>
+        <a mat-button [routerLink]="['/caja/comprobante', v.id]">
+          <mat-icon>receipt</mat-icon> Ver comprobante
+        </a>
+      </div>
+    </div>
+  }
+</div>

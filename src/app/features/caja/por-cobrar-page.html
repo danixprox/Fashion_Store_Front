@@ -1,0 +1,52 @@
+<h1>Por cobrar</h1>
+<p class="muted">
+  Prendas que clientes con reserva decidieron llevarse. Cobralas como cualquier venta en caja.
+</p>
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (sinResultados()) {
+  <p class="vacio">No hay ventas de reservas pendientes de cobro.</p>
+}
+
+<div class="lista">
+  @for (v of ventas(); track v.id) {
+    <div class="tarjeta">
+      <div class="cabecera">
+        <div>
+          <strong>Pedido #{{ v.id }}</strong>
+          <span class="fecha">{{ v.fecha_creacion | date: 'd MMM y, HH:mm' }}</span>
+        </div>
+        <span class="chip">{{ v.cliente_nombre }}</span>
+      </div>
+      <p class="origen">De la reserva #{{ v.reserva_id }}</p>
+      <ul class="items">
+        @for (item of v.items; track item.id) {
+          <li>
+            {{ item.producto }}
+            <span class="detalle">{{ item.talla }} · {{ item.color }}</span>
+            <span class="cant">×{{ item.cantidad }}</span>
+          </li>
+        }
+      </ul>
+      <div class="pie">
+        <span class="total">Total Bs {{ +v.total | number: '1.2-2' }}</span>
+        <div class="acciones">
+          <button mat-button [disabled]="procesando() === v.id" (click)="anular(v)">
+            No se lleva
+          </button>
+          <button
+            mat-flat-button
+            class="btn-primario"
+            [disabled]="procesando() === v.id"
+            (click)="cobrar(v)"
+          >
+            <mat-icon>payments</mat-icon> Cobrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
