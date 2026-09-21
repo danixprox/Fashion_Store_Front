@@ -1,0 +1,106 @@
+<mat-toolbar class="cr-bar">
+  <button mat-icon-button (click)="volver()" aria-label="Volver">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Mi carrito</span>
+</mat-toolbar>
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<div class="cr-content">
+  @if (sinResultados()) {
+    <div class="vacio">
+      <mat-icon>shopping_bag</mat-icon>
+      <h2>Tu carrito está vacío</h2>
+      <p>Elegí alguna prenda del catálogo para agregarla acá.</p>
+      <a mat-flat-button class="btn-primario" routerLink="/catalogo">Ir al catálogo</a>
+    </div>
+  }
+
+  @if (items().length > 0) {
+    @if (hayNoDisponibles()) {
+      <p class="aviso">
+        <mat-icon>error_outline</mat-icon>
+        Algunas prendas ya no tienen stock. Quitalas para poder continuar más adelante.
+      </p>
+    }
+
+    <div class="lista">
+      @for (item of items(); track item.id) {
+        <div class="tarjeta" [class.sin-stock]="!item.disponible">
+          @if (item.imagen_efectivo) {
+            <img [src]="item.imagen_efectivo" [alt]="item.producto" class="miniatura" />
+          } @else {
+            <div class="miniatura ph"><mat-icon>checkroom</mat-icon></div>
+          }
+
+          <div class="info">
+            <strong>{{ item.producto }}</strong>
+            <span class="detalle">{{ item.talla }} · {{ item.color }}</span>
+            @if (!item.disponible) {
+              <span class="chip-sin-stock">Sin stock</span>
+            }
+            <span class="precio">
+              @if (item.promocion && item.precio_original) {
+                <span class="precio-tachado">Bs {{ +item.precio_original | number: '1.2-2' }}</span>
+              }
+              Bs {{ +(item.precio_unitario ?? 0) | number: '1.2-2' }} c/u
+            </span>
+            @if (item.promocion) {
+              <span class="etiqueta-oferta">{{ item.promocion }}</span>
+            }
+          </div>
+
+          <div class="cantidad">
+            <button
+              mat-icon-button
+              [disabled]="actualizando() === item.id || item.cantidad <= 1"
+              (click)="cambiarCantidad(item, -1)"
+            >
+              <mat-icon>remove</mat-icon>
+            </button>
+            <span>{{ item.cantidad }}</span>
+            <button
+              mat-icon-button
+              [disabled]="actualizando() === item.id || item.cantidad >= 20"
+              (click)="cambiarCantidad(item, 1)"
+            >
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div class="subtotal">Bs {{ +(item.subtotal ?? 0) | number: '1.2-2' }}</div>
+
+          <button
+            mat-icon-button
+            class="quitar"
+            matTooltip="Quitar"
+            [disabled]="actualizando() === item.id"
+            (click)="quitar(item)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+
+    <div class="resumen">
+      <button mat-button (click)="vaciar()">Vaciar carrito</button>
+      <div class="total">
+        <span>Total</span>
+        <strong>Bs {{ +(carrito()?.total ?? 0) | number: '1.2-2' }}</strong>
+      </div>
+      <button
+        mat-flat-button
+        class="btn-primario"
+        [disabled]="hayNoDisponibles()"
+        [matTooltip]="hayNoDisponibles() ? 'Quitá las prendas sin stock para continuar' : ''"
+        (click)="irACheckout()"
+      >
+        <mat-icon>shopping_cart_checkout</mat-icon> Finalizar compra
+      </button>
+    </div>
+  }
+</div>
