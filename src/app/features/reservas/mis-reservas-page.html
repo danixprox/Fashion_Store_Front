@@ -1,0 +1,61 @@
+<mat-toolbar class="mr-bar">
+  <button mat-icon-button (click)="volver()" aria-label="Volver">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Mis reservas</span>
+</mat-toolbar>
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<div class="mr-content">
+  @if (sinResultados()) {
+    <div class="vacio">
+      <mat-icon>event_note</mat-icon>
+      <h2>Todavía no tenés reservas</h2>
+      <p>Elegí una prenda del catálogo y reservá un turno para probártela.</p>
+      <a mat-flat-button class="btn-primario" routerLink="/catalogo">Ir al catálogo</a>
+    </div>
+  }
+
+  @for (r of reservas(); track r.id) {
+    <div class="tarjeta">
+      <div class="cabecera">
+        <div>
+          <strong>{{ r.fecha | date: 'EEEE d MMMM y' }}</strong>
+          <span class="hora">{{ r.hora_inicio.slice(0, 5) }} – {{ r.hora_fin.slice(0, 5) }}</span>
+        </div>
+        <span class="chip" [class]="'chip-' + r.estado.toLowerCase()">
+          {{ etiquetaEstado(r.estado) }}
+        </span>
+      </div>
+      <p class="sucursal">
+        <mat-icon>store</mat-icon>
+        {{ r.sucursal }} — {{ r.ciudad }}
+      </p>
+      <ul class="items">
+        @for (item of r.items; track item.variante_id) {
+          <li>
+            {{ item.producto }}
+            <span class="detalle">{{ item.talla }} · {{ item.color }}</span>
+            <span class="cant">×{{ item.cantidad }}</span>
+          </li>
+        }
+      </ul>
+      @if (r.estado === 'PENDIENTE') {
+        <div class="acciones">
+          <button
+            mat-stroked-button
+            color="warn"
+            [disabled]="cancelando() === r.id"
+            (click)="cancelar(r)"
+          >
+            <mat-icon>event_busy</mat-icon>
+            {{ cancelando() === r.id ? 'Cancelando…' : 'Cancelar reserva' }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
