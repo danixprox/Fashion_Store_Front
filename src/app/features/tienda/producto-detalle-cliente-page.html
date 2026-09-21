@@ -1,0 +1,144 @@
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+  <div class="loading">Cargando…</div>
+} @else if (noEncontrado()) {
+  <div class="no-encontrado">
+    <mat-icon>search_off</mat-icon>
+    <h1>No encontramos esta prenda</h1>
+    <p>Puede que ya no esté disponible.</p>
+    <a mat-flat-button class="btn-primario" routerLink="/catalogo">Volver al catálogo</a>
+  </div>
+} @else if (producto(); as p) {
+  <nav class="migas">
+    <a routerLink="/catalogo">Catálogo</a>
+    <span>/</span>
+    <span>{{ p.categoria }}</span>
+  </nav>
+
+  <div class="layout">
+    <div class="galeria">
+      @if (imagenMostrada(); as img) {
+        <img [src]="img" [alt]="p.nombre" />
+      } @else {
+        <div class="ph">
+          <mat-icon>checkroom</mat-icon>
+        </div>
+      }
+    </div>
+
+    <div class="info">
+      @if (p.categoria) {
+        <span class="cat">{{ p.categoria }}</span>
+      }
+      <h1>{{ p.nombre }}</h1>
+      @let vSel = varianteSeleccionada();
+      @let precioNormal = vSel?.precio_efectivo ?? p.precio_base;
+      @let precioPromo = vSel ? vSel.precio_promocional : p.precio_promocional;
+      @let etiquetaPromo = vSel ? vSel.promocion : p.promocion;
+      <p class="precio">
+        @if (precioPromo) {
+          <span class="precio-tachado">Bs {{ +precioNormal | number: '1.2-2' }}</span>
+          <span class="precio-oferta">Bs {{ +precioPromo | number: '1.2-2' }}</span>
+          @if (etiquetaPromo) {
+            <span class="etiqueta-oferta">{{ etiquetaPromo }}</span>
+          }
+        } @else {
+          Bs {{ +precioNormal | number: '1.2-2' }}
+        }
+      </p>
+
+      @if (p.temporada || p.coleccion) {
+        <p class="meta">
+          @if (p.coleccion) { {{ p.coleccion }} }
+          @if (p.temporada) { · {{ p.temporada }} }
+        </p>
+      }
+
+      @if (colores().length > 0) {
+        <div class="selector">
+          <span class="etiqueta">Color</span>
+          <div class="opciones-color">
+            @for (c of colores(); track c.color_id) {
+              <button
+                type="button"
+                class="swatch"
+                [class.sel]="colorSel() === c.color_id"
+                [style.background]="c.color_hex || '#e2e8f0'"
+                [matTooltip]="c.color || ''"
+                (click)="elegirColor(c.color_id)"
+              ></button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (tallasParaColor().length > 0) {
+        <div class="selector">
+          <span class="etiqueta">Talla</span>
+          <div class="opciones-talla">
+            @for (t of tallasParaColor(); track t.talla_id) {
+              <button
+                type="button"
+                class="pill"
+                [class.sel]="tallaSel() === t.talla_id"
+                (click)="elegirTalla(t.talla_id)"
+              >
+                {{ t.talla }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="acciones">
+        <button
+          mat-flat-button
+          class="btn-primario"
+          [disabled]="disponibilidad().length === 0"
+          [matTooltip]="disponibilidad().length === 0 ? 'Sin stock en sucursales por ahora' : ''"
+          (click)="agregarAReserva()"
+        >
+          <mat-icon>event_available</mat-icon> Agregar a mi reserva
+        </button>
+        <button
+          mat-stroked-button
+          [disabled]="disponibilidad().length === 0 || agregandoCarrito()"
+          [matTooltip]="disponibilidad().length === 0 ? 'Sin stock en sucursales por ahora' : ''"
+          (click)="agregarAlCarrito()"
+        >
+          <mat-icon>shopping_bag</mat-icon> Agregar al carrito
+        </button>
+      </div>
+      @if (varianteSeleccionada(); as v) {
+        <div class="disponibilidad">
+          <span class="etiqueta">Disponible en</span>
+          @if (cargandoDisponibilidad()) {
+            <p class="muted">Consultando sucursales…</p>
+          } @else if (disponibilidad().length > 0) {
+            <ul class="lista-sucursales">
+              @for (d of disponibilidad(); track d.sucursal_id) {
+                <li>
+                  <mat-icon>store</mat-icon>
+                  <span>{{ d.sucursal }} — {{ d.ciudad }}</span>
+                  <span class="cant">{{ d.cantidad_disponible }} und.</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="muted sin-stock">
+              <mat-icon>error_outline</mat-icon>
+              Sin stock en sucursales para {{ v.talla }} / {{ v.color }} por ahora.
+            </p>
+          }
+        </div>
+      }
+
+      @if (p.descripcion) {
+        <div class="descripcion">
+          <h2>Descripción</h2>
+          <p>{{ p.descripcion }}</p>
+        </div>
+      }
+    </div>
+  </div>
+}

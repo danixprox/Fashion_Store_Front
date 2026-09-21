@@ -1,0 +1,142 @@
+<header class="page-head">
+  <h1>Catálogo</h1>
+  <p>Explorá todas las prendas disponibles.</p>
+</header>
+
+<div class="barra">
+  <mat-form-field appearance="outline" class="buscar">
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput [formControl]="qCtrl" placeholder="Buscar prendas…" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="orden">
+    <mat-label>Ordenar por</mat-label>
+    <mat-select [value]="orden()" (valueChange)="cambiarOrden($event)">
+      <mat-option value="novedad">Novedades</mat-option>
+      <mat-option value="precio_asc">Precio: menor a mayor</mat-option>
+      <mat-option value="precio_desc">Precio: mayor a menor</mat-option>
+      <mat-option value="nombre">Nombre (A-Z)</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button
+    type="button"
+    class="btn-filtros"
+    [class.activo]="panelAbierto() || filtrosActivos() > 0"
+    (click)="alternarPanel()"
+  >
+    <mat-icon>tune</mat-icon>
+    Filtros
+    @if (filtrosActivos() > 0) {
+      <span class="badge">{{ filtrosActivos() }}</span>
+    }
+  </button>
+</div>
+
+@if (panelAbierto()) {
+  <div class="panel-filtros">
+    @if (tallas().length > 0) {
+      <div class="grupo">
+        <span class="etiqueta">Talla</span>
+        <div class="opciones">
+          @for (t of tallas(); track t.id) {
+            <button
+              type="button"
+              class="pill"
+              [class.sel]="tallaId() === t.id"
+              (click)="elegirTalla(t.id)"
+            >
+              {{ t.valor }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    @if (colores().length > 0) {
+      <div class="grupo">
+        <span class="etiqueta">Color</span>
+        <div class="opciones">
+          @for (c of colores(); track c.id) {
+            <button
+              type="button"
+              class="swatch"
+              [class.sel]="colorId() === c.id"
+              [style.background]="c.codigo_hex || '#e2e8f0'"
+              [matTooltip]="c.nombre"
+              (click)="elegirColor(c.id)"
+            ></button>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="grupo precio">
+      <span class="etiqueta">Precio (Bs)</span>
+      <div class="rango">
+        <mat-form-field appearance="outline" class="precio-input">
+          <mat-label>Mín.</mat-label>
+          <input matInput type="number" min="0" [formControl]="precioMinCtrl" />
+        </mat-form-field>
+        <span class="guion">—</span>
+        <mat-form-field appearance="outline" class="precio-input">
+          <mat-label>Máx.</mat-label>
+          <input matInput type="number" min="0" [formControl]="precioMaxCtrl" />
+        </mat-form-field>
+      </div>
+    </div>
+
+    @if (filtrosActivos() > 0) {
+      <button type="button" class="link-limpiar" (click)="limpiarFiltros()">
+        Limpiar filtros
+      </button>
+    }
+  </div>
+}
+
+@if (categorias().length > 0) {
+  <div class="chips">
+    <button
+      class="chip"
+      [class.activo]="categoriaId() === null"
+      (click)="elegirCategoria(null)"
+    >
+      Todas
+    </button>
+    @for (c of categorias(); track c.id) {
+      <button
+        class="chip"
+        [class.activo]="categoriaId() === c.id"
+        (click)="elegirCategoria(c.id)"
+      >
+        {{ c.nombre }}
+      </button>
+    }
+  </div>
+}
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" class="barra-progreso" />
+}
+
+@if (productos().length > 0) {
+  <div class="grid">
+    @for (p of productos(); track p.id) {
+      <app-producto-card [producto]="p" />
+    }
+  </div>
+
+  <mat-paginator
+    [length]="total()"
+    [pageIndex]="page()"
+    [pageSize]="12"
+    [hidePageSize]="true"
+    (page)="onPage($event)"
+  />
+} @else if (sinResultados()) {
+  <div class="vacio">
+    <mat-icon>search_off</mat-icon>
+    <p>No encontramos prendas con esos filtros.</p>
+    <button class="chip activo" (click)="limpiarFiltros()">Limpiar filtros</button>
+  </div>
+}
