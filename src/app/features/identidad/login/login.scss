@@ -1,0 +1,84 @@
+.login-wrap {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, var(--fs-green-100), transparent 60%),
+    radial-gradient(1000px 500px at 110% 120%, var(--fs-green-50), transparent 55%),
+    var(--fs-white);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.login-body {
+  padding: 2rem 1.75rem 1.5rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--fs-green-700);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+h1 {
+  margin: 1rem 0 0.25rem;
+  font-size: 1.5rem;
+  color: var(--fs-green-900);
+}
+
+.sub {
+  margin: 0 0 1.25rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.submit-btn {
+  margin-top: 0.5rem;
+  height: 44px;
+  background: var(--fs-green-700);
+  color: #fff;
+}
+
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.25rem 0 0.5rem;
+  color: #b3261e;
+  font-size: 0.85rem;
+
+  mat-icon {
+    font-size: 1.1rem;
+    height: 1.1rem;
+    width: 1.1rem;
+  }
+}
+
+.alt {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.85rem;
+
+  a {
+    color: var(--fs-green-700);
+  }
+}
