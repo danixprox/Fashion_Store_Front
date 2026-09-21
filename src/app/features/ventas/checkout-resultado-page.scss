@@ -1,0 +1,53 @@
+.cr-bar {
+  background: var(--fs-green-700);
+  color: #fff;
+}
+
+.cr-content {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem;
+}
+
+.estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  background: #fff;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+
+  mat-icon {
+    font-size: 44px;
+    width: 44px;
+    height: 44px;
+    color: #94a3b8;
+  }
+  h2 {
+    margin: 0.25rem 0 0;
+    font-size: 1.1rem;
+    color: #0f172a;
+  }
+}
+
+.estado.exito mat-icon {
+  color: var(--fs-green-700);
+}
+.estado.error mat-icon {
+  color: #b3261e;
+}
+
+.muted {
+  color: #64748b;
+  font-size: 0.88rem;
+  margin: 0 0 0.5rem;
+}
+
+.btn-primario {
+  background: var(--fs-green-700);
+  color: #fff;
+  margin-top: 0.5rem;
+}

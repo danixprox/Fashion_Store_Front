@@ -1,0 +1,55 @@
+<mat-toolbar class="cr-bar">
+  <span>Tu pedido</span>
+</mat-toolbar>
+
+<div class="cr-content">
+  @switch (fase()) {
+    @case ('confirmando') {
+      <div class="estado">
+        <mat-spinner diameter="44" />
+        <h2>Confirmando tu pago…</h2>
+        <p class="muted">Esto puede tardar unos segundos.</p>
+      </div>
+    }
+    @case ('aprobado') {
+      <div class="estado exito">
+        <mat-icon>check_circle</mat-icon>
+        <h2>¡Listo! Tu compra fue confirmada</h2>
+        <p class="muted">Pedido #{{ ventaId() }}. Lo despachamos desde la sucursal que elegiste.</p>
+        <a mat-flat-button class="btn-primario" routerLink="/mis-compras">Ver mis compras</a>
+      </div>
+    }
+    @case ('rechazado') {
+      <div class="estado error">
+        <mat-icon>error</mat-icon>
+        <h2>El pago no se pudo procesar</h2>
+        <p class="muted">Podés intentarlo de nuevo.</p>
+        <button mat-flat-button class="btn-primario" [disabled]="reintentando()" (click)="reintentarPago()">
+          Reintentar pago
+        </button>
+      </div>
+    }
+    @case ('cancelado') {
+      <div class="estado">
+        <mat-icon>info</mat-icon>
+        <h2>Volviste sin completar el pago</h2>
+        <p class="muted">Tu pedido #{{ ventaId() }} sigue pendiente, no se perdió.</p>
+        <button mat-flat-button class="btn-primario" [disabled]="reintentando()" (click)="reintentarPago()">
+          Reintentar pago
+        </button>
+        <a mat-button routerLink="/mis-compras">Ver mis compras</a>
+      </div>
+    }
+    @case ('agotado') {
+      <div class="estado">
+        <mat-icon>hourglass_top</mat-icon>
+        <h2>Todavía estamos confirmando tu pago</h2>
+        <p class="muted">Puede tardar un poco más. Revisá en unos minutos.</p>
+        <button mat-flat-button class="btn-primario" (click)="volverAConsultar()">
+          Consultar de nuevo
+        </button>
+        <a mat-button routerLink="/mis-compras">Ver mis compras</a>
+      </div>
+    }
+  }
+</div>

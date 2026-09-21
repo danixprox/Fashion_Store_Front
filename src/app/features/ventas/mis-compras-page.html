@@ -1,0 +1,87 @@
+<mat-toolbar class="mc-bar">
+  <button mat-icon-button (click)="volver()" aria-label="Volver">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Mis compras</span>
+</mat-toolbar>
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<div class="mc-content">
+  @if (sinResultados()) {
+    <div class="vacio">
+      <mat-icon>receipt_long</mat-icon>
+      <h2>Todavía no hiciste ninguna compra</h2>
+      <a mat-flat-button class="btn-primario" routerLink="/catalogo">Ir al catálogo</a>
+    </div>
+  }
+
+  @for (v of ventas(); track v.id) {
+    <div class="tarjeta">
+      <div class="cabecera">
+        <div>
+          <strong>Pedido #{{ v.id }}</strong>
+          <span class="fecha">{{ v.fecha_creacion | date: 'd MMM y, HH:mm' }}</span>
+        </div>
+        <span class="chip" [class]="'chip-' + v.estado.toLowerCase()">
+          {{ etiquetaEstado(v.estado) }}
+        </span>
+      </div>
+      <p class="sucursal">
+        <mat-icon>store</mat-icon>
+        {{ v.direccion_entrega ? 'Despacho desde' : 'Compra en' }} {{ v.sucursal }}{{ v.ciudad ? ' — ' + v.ciudad : '' }}
+      </p>
+      @if (v.direccion_entrega) {
+        <p class="sucursal">
+          <mat-icon>location_on</mat-icon>
+          Entrega en {{ v.direccion_entrega }}{{ v.referencia_entrega ? ' (' + v.referencia_entrega + ')' : '' }}
+        </p>
+      }
+      <ul class="items">
+        @for (item of v.items; track item.id) {
+          <li>
+            {{ item.producto }}
+            <span class="detalle">{{ item.talla }} · {{ item.color }}</span>
+            <span class="cant">×{{ item.cantidad }}</span>
+            <span class="cant">
+              @if (item.precio_original && +item.precio_original > +item.precio_unitario) {
+                <span class="precio-tachado">Bs {{ +item.precio_original | number: '1.2-2' }}</span>
+              }
+              Bs {{ +item.precio_unitario | number: '1.2-2' }} c/u
+            </span>
+            @if (v.varias_sucursales) {
+              <span class="detalle">desde {{ item.sucursal }}</span>
+            }
+          </li>
+        }
+      </ul>
+      <div class="pie">
+        <span class="total">
+          Total Bs {{ +v.total | number: '1.2-2' }}
+          @if (ahorro(v) > 0) {
+            <span class="ahorro">(ahorraste Bs {{ ahorro(v) | number: '1.2-2' }})</span>
+          }
+        </span>
+        @if (v.estado === 'PENDIENTE_PAGO' && v.reserva_id) {
+          <span class="total">Se cobra en caja</span>
+        } @else if (v.estado === 'PENDIENTE_PAGO') {
+          <div class="acciones">
+            <button mat-button (click)="cancelar(v)" [disabled]="procesando() === v.id">
+              Cancelar
+            </button>
+            <button
+              mat-flat-button
+              class="btn-primario"
+              [disabled]="procesando() === v.id"
+              (click)="reintentarPago(v)"
+            >
+              Pagar ahora
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

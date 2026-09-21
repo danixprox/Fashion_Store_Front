@@ -1,0 +1,94 @@
+<mat-toolbar class="ck-bar">
+  <button mat-icon-button (click)="volver()" aria-label="Volver">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Finalizar compra</span>
+</mat-toolbar>
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<div class="ck-content">
+  @if (paso() === 'entrega') {
+    <section class="resumen">
+      <h2>Tu pedido</h2>
+      @for (item of items(); track item.id) {
+        <div class="linea">
+          <span>{{ item.producto }} — {{ item.talla }} · {{ item.color }} ×{{ item.cantidad }}</span>
+          <strong>Bs {{ +(item.subtotal ?? 0) | number: '1.2-2' }}</strong>
+        </div>
+      }
+      <div class="linea total">
+        <span>Total</span>
+        <strong>Bs {{ +(carrito()?.total ?? 0) | number: '1.2-2' }}</strong>
+      </div>
+    </section>
+
+    <section class="entrega">
+      <h2>¿A dónde enviamos tu pedido?</h2>
+      <p class="muted">
+        Pagás online y te lo enviamos. Despachamos desde la sucursal (o sucursales) que tengan
+        stock de tus prendas.
+      </p>
+      <mat-form-field appearance="outline">
+        <mat-label>Dirección de entrega</mat-label>
+        <input
+          matInput
+          [formControl]="direccion"
+          maxlength="200"
+          placeholder="Calle, número, zona y ciudad"
+        />
+        @if (direccion.touched && direccion.invalid) {
+          <mat-error>Ingresá una dirección de entrega (mínimo 5 caracteres).</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Referencia (opcional)</mat-label>
+        <input
+          matInput
+          [formControl]="referencia"
+          maxlength="150"
+          placeholder="Ej.: portón azul, frente a la farmacia"
+        />
+      </mat-form-field>
+    </section>
+
+    <button
+      mat-flat-button
+      class="btn-primario"
+      [disabled]="procesando() || items().length === 0"
+      (click)="continuarAlPago()"
+    >
+      <mat-icon>lock</mat-icon>
+      {{ procesando() ? 'Generando el pago…' : 'Continuar al pago' }}
+    </button>
+  }
+
+  @if (paso() === 'pago'; as _) {
+    <section class="pago">
+      <mat-icon class="icono-pago">qr_code_2</mat-icon>
+      <h2>Pedido #{{ ventaId() }} listo para pagar</h2>
+      <p class="muted">
+        Es un pago de prueba (Stripe test mode) — no se cobra nada real.
+        Podés usar la tarjeta de prueba <strong>4242 4242 4242 4242</strong>,
+        cualquier fecha futura y cualquier CVC.
+      </p>
+
+      <button mat-flat-button class="btn-primario" (click)="irAPagar()">
+        <mat-icon>credit_card</mat-icon> Ir a pagar con Stripe
+      </button>
+
+      @if (pago()?.qr_data_url; as qr) {
+        <div class="qr">
+          <span class="muted">o escaneá este código desde tu celular</span>
+          <img [src]="qr" alt="Código QR de pago" />
+        </div>
+      }
+
+      <button mat-button class="cancelar" (click)="cancelarPedido()">
+        Cancelar este pedido
+      </button>
+    </section>
+  }
+</div>
