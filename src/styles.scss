@@ -1,0 +1,69 @@
+// Tailwind CSS v4
+@use "tailwindcss";
+
+// Angular Material — tema Material 3 con paleta verde (FashionStore).
+@use "@angular/material" as mat;
+
+html {
+  height: 100%;
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$green-palette,
+        tertiary: mat.$spring-green-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+}
+
+// Paleta de marca FashionStore (verde / blanco) para usar fuera de Material.
+:root {
+  --fs-green-900: #0f3d2e;
+  --fs-green-700: #16794f;
+  --fs-green-600: #1c8a5b;
+  --fs-green-500: #22a06b;
+  --fs-green-100: #d9f2e6;
+  --fs-green-50: #eefaf4;
+  --fs-white: #ffffff;
+  --fs-oferta: #c2410c;
+}
+
+// CU33 — precio con promoción (se usa en catálogo, detalle, carrito y chat).
+.precio-tachado {
+  color: #94a3b8;
+  font-weight: 400;
+  text-decoration: line-through;
+  margin-right: 0.35rem;
+}
+
+.precio-oferta {
+  color: var(--fs-oferta);
+}
+
+// Tooltip con varias líneas (detalle de los productos/variantes de una promoción).
+.tooltip-multilinea .mdc-tooltip__surface {
+  white-space: pre-line;
+}
+
+.etiqueta-oferta {
+  display: inline-block;
+  background: #fff7ed;
+  color: var(--fs-oferta);
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.05rem 0.5rem;
+  line-height: 1.5;
+}
