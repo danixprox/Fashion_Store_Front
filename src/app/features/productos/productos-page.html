@@ -1,0 +1,141 @@
+<header class="page-head">
+  <div>
+    <h1>Productos</h1>
+    <p class="muted">Prendas del catálogo y sus variantes (talla + color).</p>
+  </div>
+  <button mat-flat-button class="btn-primary" routerLink="/admin/productos/nuevo">
+    <mat-icon>add</mat-icon> Nuevo producto
+  </button>
+</header>
+
+<section class="filtros">
+  <mat-form-field appearance="outline" class="f-buscar">
+    <mat-label>Buscar</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput [formControl]="qCtrl" placeholder="Nombre del producto…" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Categoría</mat-label>
+    <mat-select [value]="categoriaId()" (valueChange)="cambiarCategoria($event)">
+      <mat-option [value]="null">Todas</mat-option>
+      @for (c of categorias(); track c.id) {
+        <mat-option [value]="c.id">{{ c.nombre }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Proveedor</mat-label>
+    <mat-select [value]="proveedorId()" (valueChange)="cambiarProveedor($event)">
+      <mat-option [value]="null">Todos</mat-option>
+      @for (p of opcProveedores(); track p.id) {
+        <mat-option [value]="p.id">{{ p.nombre_empresa }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="f-estado">
+    <mat-label>Estado</mat-label>
+    <mat-select [value]="estado()" (valueChange)="cambiarEstado($event)">
+      <mat-option value="todos">Todos</mat-option>
+      <mat-option value="activos">Activos</mat-option>
+      <mat-option value="inactivos">Inactivos</mat-option>
+    </mat-select>
+  </mat-form-field>
+</section>
+
+<div class="tabla-wrap mat-elevation-z1">
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  <div class="tabla-scroll">
+    <table mat-table [dataSource]="productos()">
+      <ng-container matColumnDef="imagen">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let p">
+          @if (p.imagen_url) {
+            <img [src]="p.imagen_url" alt="" class="thumb" />
+          } @else {
+            <span class="thumb thumb-ph"><mat-icon>checkroom</mat-icon></span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef>Nombre</th>
+        <td mat-cell *matCellDef="let p">
+          <a [routerLink]="['/admin/productos', p.id]" class="link">{{ p.nombre }}</a>
+          @if (p.temporada) {
+            <span class="sub">{{ p.coleccion }} · {{ p.temporada }}</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="categoria">
+        <th mat-header-cell *matHeaderCellDef>Categoría</th>
+        <td mat-cell *matCellDef="let p">{{ p.categoria }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="proveedor">
+        <th mat-header-cell *matHeaderCellDef>Proveedor</th>
+        <td mat-cell *matCellDef="let p">{{ p.proveedor }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="precio">
+        <th mat-header-cell *matHeaderCellDef>Precio venta</th>
+        <td mat-cell *matCellDef="let p">
+          @if (p.precio_base) {
+            Bs {{ +p.precio_base | number: '1.2-2' }}
+          } @else {
+            <span class="sin-precio">sin precio</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="variantes">
+        <th mat-header-cell *matHeaderCellDef>Variantes</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="chip">{{ p.cantidad_variantes }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="chip" [class.chip-off]="!p.activo">
+            {{ p.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let p" class="col-acciones">
+          <a mat-icon-button matTooltip="Editar" [routerLink]="['/admin/productos', p.id]">
+            <mat-icon>edit</mat-icon>
+          </a>
+          <button mat-icon-button matTooltip="Eliminar" (click)="eliminar(p)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnas"></tr>
+    </table>
+  </div>
+
+  @if (sinResultados()) {
+    <p class="vacio">No se encontraron productos con esos filtros.</p>
+  }
+
+  <mat-paginator
+    [length]="total()"
+    [pageIndex]="page()"
+    [pageSize]="size()"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+    showFirstLastButtons
+  />
+</div>
