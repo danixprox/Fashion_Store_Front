@@ -1,0 +1,100 @@
+<mat-toolbar class="mc-bar">
+  <button mat-icon-button (click)="volver()" aria-label="Volver">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Mi cuenta</span>
+</mat-toolbar>
+
+<div class="mc-content">
+  @if (usuario(); as u) {
+    <section class="mc-perfil">
+      <div class="avatar">{{ iniciales() }}</div>
+      <div>
+        <h2>{{ u.nombre }} {{ u.apellido }}</h2>
+        <p>{{ u.email }}</p>
+        <span class="chip">{{ u.rol }}</span>
+      </div>
+    </section>
+
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Datos personales</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="datosForm" (ngSubmit)="guardarDatos()">
+          <div class="fila">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="nombre" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Apellido</mat-label>
+              <input matInput formControlName="apellido" />
+            </mat-form-field>
+          </div>
+          <mat-form-field appearance="outline">
+            <mat-label>Teléfono</mat-label>
+            <input matInput formControlName="telefono" />
+          </mat-form-field>
+          <div class="acciones">
+            <button
+              mat-flat-button
+              type="submit"
+              class="btn-primary"
+              [disabled]="guardandoDatos()"
+            >
+              Guardar cambios
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Seguridad</mat-card-title>
+        <mat-card-subtitle>Cambiar contraseña</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="passForm" (ngSubmit)="cambiarPassword()">
+          <mat-form-field appearance="outline">
+            <mat-label>Contraseña actual</mat-label>
+            <input matInput type="password" formControlName="password_actual" autocomplete="current-password" />
+          </mat-form-field>
+          <div class="fila">
+            <mat-form-field appearance="outline">
+              <mat-label>Nueva contraseña</mat-label>
+              <input matInput type="password" formControlName="password_nueva" autocomplete="new-password" />
+              <mat-hint>Mínimo 8 caracteres.</mat-hint>
+              @if (passForm.controls.password_nueva.hasError('minlength')) {
+                <mat-error>Al menos 8 caracteres.</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Repetir nueva</mat-label>
+              <input matInput type="password" formControlName="confirmar" autocomplete="new-password" />
+              @if (passForm.hasError('noCoincide') && passForm.controls.confirmar.touched) {
+                <mat-error>No coinciden.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          @if (errorPass()) {
+            <p class="form-error" role="alert">
+              <mat-icon>error_outline</mat-icon>{{ errorPass() }}
+            </p>
+          }
+          <div class="acciones">
+            <button
+              mat-flat-button
+              type="submit"
+              class="btn-primary"
+              [disabled]="guardandoPass()"
+            >
+              Cambiar contraseña
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
